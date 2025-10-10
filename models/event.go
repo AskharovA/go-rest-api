@@ -92,3 +92,19 @@ func (e *Event) Update(dbConn *sql.DB) error {
 	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.ID)
 	return err
 }
+
+func (e *Event) Delete(dbConn *sql.DB) error {
+	query := `
+	DELETE FROM events
+	WHERE id = ?
+	`
+	stmt, err := dbConn.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID)
+	return err
+}
