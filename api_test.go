@@ -1,6 +1,7 @@
 package main
 
 import (
+	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/models"
 	"bytes"
 	"encoding/json"
@@ -9,18 +10,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
-func setupRouter() *gin.Engine {
-	r := gin.Default()
-	r.GET("/events", getEvents)
-	r.POST("/events", createEvent)
-	return r
-}
-
 func TestGetEvents(t *testing.T) {
+	db.InitDB()
 	router := setupRouter()
 
 	w := httptest.NewRecorder()
@@ -32,6 +26,7 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestCreateEvent(t *testing.T) {
+	db.InitDB()
 	router := setupRouter()
 
 	newEvent := models.Event{

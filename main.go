@@ -8,18 +8,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	db.InitDB()
+func setupRouter() *gin.Engine {
 	server := gin.Default()
 
 	server.GET("/events", getEvents)
 	server.POST("/events", createEvent)
 
+	return server
+}
+
+func main() {
+	db.InitDB()
+
+	server := setupRouter()
 	server.Run(":8080")
 }
 
 func getEvents(context *gin.Context) {
-	events := models.GetAllEvents()
+	events, err := models.GetAllEvents()
+
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
+		return
+	}
+
 	context.JSON(http.StatusOK, gin.H{"message": "OK", "data": events})
 }
 
@@ -33,7 +45,11 @@ func createEvent(context *gin.Context) {
 	}
 
 	event.UserID = 1 // dummy value
-	event.Save()
+	err = event.Save()
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
+		return
+	}
 
 	context.JSON(http.StatusCreated, gin.H{"message": "OK", "data": event})
 }
