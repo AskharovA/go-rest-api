@@ -12,4 +12,5 @@ func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
 	server.POST("/events", func(c *gin.Context) { createEvent(c, dbConn) })
 	server.PUT("/events/:id", func(c *gin.Context) { updateEvent(c, dbConn) })
 	server.DELETE("/events/:id", func(c *gin.Context) { deleteEvent(c, dbConn) })
+	server.POST("/signup", func(c *gin.Context) { signup(c, dbConn) })
 }
