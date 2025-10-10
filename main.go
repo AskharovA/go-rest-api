@@ -1,6 +1,7 @@
 package main
 
 import (
+	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/models"
 	"net/http"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func main() {
+	db.InitDB()
 	server := gin.Default()
 
 	server.GET("/events", getEvents)
