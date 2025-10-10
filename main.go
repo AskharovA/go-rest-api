@@ -24,7 +24,7 @@ func main() {
 
 	err = db.CreateTables(dbConn)
 	if err != nil {
-		panic("Cold not create tables.")
+		panic("Could not create tables.")
 	}
 
 	server := setupRouter(dbConn)
