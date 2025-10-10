@@ -25,7 +25,7 @@ func InitDB() {
 func createTables() {
 	createEventsTable := `
 	CREATE TABLE IF NOT EXISTS events (
-		id SERIAL PRIMARY KEY,
+		id SERIAL PRIMARY KEY AUTOINCREMENT,
 		name TEXT NOT NULL,
 		description TEXT NOT NULL,
 		location TEXT NOT NULL,

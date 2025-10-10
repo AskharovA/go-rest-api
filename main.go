@@ -32,7 +32,6 @@ func createEvent(context *gin.Context) {
 		return
 	}
 
-	event.ID = 1     // dummy value
 	event.UserID = 1 // dummy value
 	event.Save()
 

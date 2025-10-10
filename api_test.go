@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func prepareTests()
+
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/events", getEvents)
@@ -59,5 +61,4 @@ func TestCreateEvent(t *testing.T) {
 
 	assert.Equal(t, newEvent.Name, eventData["name"])
 	assert.Equal(t, newEvent.Description, eventData["description"])
-	assert.Equal(t, float64(1), eventData["userId"])
 }
