@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupTestDB(t *testing.T) *sql.DB {
+func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	testDbFile := "api_test.db"
 	dbConn, err := db.InitDB(testDbFile)
 	if err != nil {
@@ -27,17 +28,25 @@ func setupTestDB(t *testing.T) *sql.DB {
 		t.Fatalf("Could not create tables for test database: %v", err)
 	}
 
+	testEvent := models.Event{
+		Name:        "Test Event",
+		Description: "A test event.",
+		Location:    "Test Location",
+		DateTime:    time.Now(),
+	}
+	testEvent.Save(dbConn)
+
 	t.Cleanup(
 		func() {
 			dbConn.Close()
 			os.Remove(testDbFile)
 		})
 
-	return dbConn
+	return dbConn, testEvent.ID
 }
 
 func TestGetEvents(t *testing.T) {
-	dbConn := setupTestDB(t)
+	dbConn, _ := setupTestDB(t)
 	router := setupRouter(dbConn)
 
 	w := httptest.NewRecorder()
@@ -49,7 +58,7 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestCreateEvent(t *testing.T) {
-	dbConn := setupTestDB(t)
+	dbConn, _ := setupTestDB(t)
 	router := setupRouter(dbConn)
 
 	newEvent := models.Event{
@@ -77,4 +86,51 @@ func TestCreateEvent(t *testing.T) {
 
 	assert.Equal(t, newEvent.Name, eventData["name"])
 	assert.Equal(t, newEvent.Description, eventData["description"])
+}
+
+func TestGetEvent(t *testing.T) {
+	dbConn, eventId := setupTestDB(t)
+	router := setupRouter(dbConn)
+
+	updatedEvent := models.Event{
+		Name:        "Test Event",
+		Description: "A test event.",
+		Location:    "Test Location",
+		DateTime:    time.Now(),
+	}
+	payload, _ := json.Marshal(updatedEvent)
+
+	url := fmt.Sprintf("/events/%d", eventId)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestUpdateEvent(t *testing.T) {
+	dbConn, eventId := setupTestDB(t)
+	router := setupRouter(dbConn)
+
+	url := fmt.Sprintf("/events/%d", eventId)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestDeleteEvent(t *testing.T) {
+	dbConn, eventId := setupTestDB(t)
+	router := setupRouter(dbConn)
+
+	url := fmt.Sprintf("/events/%d", eventId)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }
