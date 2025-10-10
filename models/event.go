@@ -1,7 +1,7 @@
 package models
 
 import (
-	"AskharovA/go-rest-api/db"
+	"database/sql"
 	"time"
 )
 
@@ -14,12 +14,12 @@ type Event struct {
 	UserID      int       `json:"userId"`
 }
 
-func (e *Event) Save() error {
+func (e *Event) Save(dbConn *sql.DB) error {
 	query := `
 	INSERT INTO events (name, description, location, dateTime, userId)
 	VALUES (?, ?, ?, ?, ?)
 	`
-	stmt, err := db.DB.Prepare(query)
+	stmt, err := dbConn.Prepare(query)
 
 	if err != nil {
 		return err
@@ -38,9 +38,9 @@ func (e *Event) Save() error {
 	return err
 }
 
-func GetAllEvents() ([]Event, error) {
+func GetAllEvents(dbConn *sql.DB) ([]Event, error) {
 	query := "SELECT * FROM events ORDER BY id"
-	rows, err := db.DB.Query(query)
+	rows, err := dbConn.Query(query)
 
 	if err != nil {
 		return nil, err
@@ -62,9 +62,9 @@ func GetAllEvents() ([]Event, error) {
 	return events, nil
 }
 
-func GetEventByID(id int64) (*Event, error) {
+func GetEventByID(id int64, dbConn *sql.DB) (*Event, error) {
 	query := "SELECT * FROM events WHERE id = ?"
-	row := db.DB.QueryRow(query, id)
+	row := dbConn.QueryRow(query, id)
 
 	var event Event
 	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserID)
@@ -76,13 +76,13 @@ func GetEventByID(id int64) (*Event, error) {
 	return &event, nil
 }
 
-func (e *Event) Update() error {
+func (e *Event) Update(dbConn *sql.DB) error {
 	query := `
 	UPDATE events
 	SET name = ?, description = ?, location = ?, dateTime = ?
 	WHERE id = ?
 	`
-	stmt, err := db.DB.Prepare(query)
+	stmt, err := dbConn.Prepare(query)
 
 	if err != nil {
 		return err

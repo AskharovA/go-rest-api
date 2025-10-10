@@ -2,14 +2,15 @@ package routes
 
 import (
 	"AskharovA/go-rest-api/models"
+	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func getEvents(context *gin.Context) {
-	events, err := models.GetAllEvents()
+func getEvents(context *gin.Context, dbConn *sql.DB) {
+	events, err := models.GetAllEvents(dbConn)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
@@ -19,7 +20,7 @@ func getEvents(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "OK", "data": events})
 }
 
-func getEvent(context *gin.Context) {
+func getEvent(context *gin.Context, dbConn *sql.DB) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
@@ -27,7 +28,7 @@ func getEvent(context *gin.Context) {
 		return
 	}
 
-	event, err := models.GetEventByID(eventId)
+	event, err := models.GetEventByID(eventId, dbConn)
 
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not fetch event."})
@@ -37,7 +38,7 @@ func getEvent(context *gin.Context) {
 	context.JSON(http.StatusOK, gin.H{"message": "OK", "data": event})
 }
 
-func createEvent(context *gin.Context) {
+func createEvent(context *gin.Context, dbConn *sql.DB) {
 	var event models.Event
 	err := context.ShouldBindJSON(&event)
 
@@ -47,7 +48,7 @@ func createEvent(context *gin.Context) {
 	}
 
 	event.UserID = 1 // dummy value
-	err = event.Save()
+	err = event.Save(dbConn)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
 		return
@@ -56,7 +57,7 @@ func createEvent(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{"message": "OK", "data": event})
 }
 
-func updateEvent(context *gin.Context) {
+func updateEvent(context *gin.Context, dbConn *sql.DB) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 
 	if err != nil {
@@ -64,7 +65,7 @@ func updateEvent(context *gin.Context) {
 		return
 	}
 
-	_, err = models.GetEventByID(eventId)
+	_, err = models.GetEventByID(eventId, dbConn)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch the event."})
@@ -80,7 +81,7 @@ func updateEvent(context *gin.Context) {
 	}
 
 	updatedEvent.ID = eventId
-	err = updatedEvent.Update()
+	err = updatedEvent.Update(dbConn)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not update event."})
