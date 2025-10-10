@@ -3,6 +3,7 @@ package models
 import (
 	"AskharovA/go-rest-api/utils"
 	"database/sql"
+	"errors"
 )
 
 type User struct {
@@ -36,4 +37,22 @@ func (u *User) Save(dbConn *sql.DB) error {
 	userId, err := result.LastInsertId()
 	u.ID = userId
 	return err
+}
+
+func (u *User) ValidateCredentials(dbConn *sql.DB) error {
+	query := "SELECT password FROM users WHERE email = ?"
+	row := dbConn.QueryRow(query, u.Email)
+
+	var retrievedPassword string
+	err := row.Scan(&retrievedPassword)
+	if err != nil {
+		return errors.New("credentials invalid")
+	}
+
+	passwordIsValid := utils.CheckPasswordHash(retrievedPassword, u.Password)
+	if !passwordIsValid {
+		return errors.New("credentials invalid")
+	}
+
+	return nil
 }
