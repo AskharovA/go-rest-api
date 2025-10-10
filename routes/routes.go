@@ -1,10 +1,14 @@
 package routes
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
 
-func RegisterRoutes(server *gin.Engine) {
-	server.GET("/events", getEvents)
-	server.GET("/events/:id", getEvent)
-	server.POST("/events", createEvent)
-	server.PUT("/events/:id", updateEvent)
+	"github.com/gin-gonic/gin"
+)
+
+func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
+	server.GET("/events", func(c *gin.Context) { getEvents(c, dbConn) })
+	server.GET("/events/:id", func(c *gin.Context) { getEvent(c, dbConn) })
+	server.POST("/events", func(c *gin.Context) { createEvent(c, dbConn) })
+	server.PUT("/events/:id", func(c *gin.Context) { updateEvent(c, dbConn) })
 }

@@ -4,18 +4,41 @@ import (
 	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/models"
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
+func setupTestDB(t *testing.T) *sql.DB {
+	testDbFile := "api_test.db"
+	dbConn, err := db.InitDB(testDbFile)
+	if err != nil {
+		t.Fatalf("Could not initialize test database: %v", err)
+	}
+
+	err = db.CreateTables(dbConn)
+	if err != nil {
+		t.Fatalf("Could not create tables for test database: %v", err)
+	}
+
+	t.Cleanup(
+		func() {
+			dbConn.Close()
+			os.Remove(testDbFile)
+		})
+
+	return dbConn
+}
+
 func TestGetEvents(t *testing.T) {
-	db.InitDB()
-	router := setupRouter()
+	dbConn := setupTestDB(t)
+	router := setupRouter(dbConn)
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/events", nil)
@@ -26,8 +49,8 @@ func TestGetEvents(t *testing.T) {
 }
 
 func TestCreateEvent(t *testing.T) {
-	db.InitDB()
-	router := setupRouter()
+	dbConn := setupTestDB(t)
+	router := setupRouter(dbConn)
 
 	newEvent := models.Event{
 		Name:        "Test Event",

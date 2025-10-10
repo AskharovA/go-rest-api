@@ -3,20 +3,30 @@ package main
 import (
 	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/routes"
+	"database/sql"
 
 	"github.com/gin-gonic/gin"
 )
 
-func setupRouter() *gin.Engine {
+func setupRouter(dbConn *sql.DB) *gin.Engine {
 	server := gin.Default()
-	routes.RegisterRoutes(server)
+	routes.RegisterRoutes(server, dbConn)
 
 	return server
 }
 
 func main() {
-	db.InitDB()
+	dbConn, err := db.InitDB("api.db")
+	if err != nil {
+		panic("Could not connect to database.")
+	}
+	defer dbConn.Close()
 
-	server := setupRouter()
+	err = db.CreateTables(dbConn)
+	if err != nil {
+		panic("Cold not create tables.")
+	}
+
+	server := setupRouter(dbConn)
 	server.Run(":8080")
 }
