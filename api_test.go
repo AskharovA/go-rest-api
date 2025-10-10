@@ -13,8 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func prepareTests()
-
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 	r.GET("/events", getEvents)
