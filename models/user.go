@@ -40,16 +40,16 @@ func (u *User) Save(dbConn *sql.DB) error {
 }
 
 func (u *User) ValidateCredentials(dbConn *sql.DB) error {
-	query := "SELECT password FROM users WHERE email = ?"
+	query := "SELECT id, password FROM users WHERE email = ?"
 	row := dbConn.QueryRow(query, u.Email)
 
 	var retrievedPassword string
-	err := row.Scan(&retrievedPassword)
+	err := row.Scan(&u.ID, &retrievedPassword)
 	if err != nil {
 		return errors.New("credentials invalid")
 	}
 
-	passwordIsValid := utils.CheckPasswordHash(retrievedPassword, u.Password)
+	passwordIsValid := utils.CheckPasswordHash(u.Password, retrievedPassword)
 	if !passwordIsValid {
 		return errors.New("credentials invalid")
 	}

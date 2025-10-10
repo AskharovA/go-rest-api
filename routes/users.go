@@ -2,6 +2,7 @@ package routes
 
 import (
 	"AskharovA/go-rest-api/models"
+	"AskharovA/go-rest-api/utils"
 	"database/sql"
 	"net/http"
 
@@ -39,5 +40,11 @@ func login(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": "User logged in successfully!"})
+	token, err := utils.GenerateToken(user.Email, user.ID)
+	if err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not authenticate user."})
+		return
+	}
+
+	context.JSON(http.StatusCreated, gin.H{"message": "Login successful!", "token": token})
 }
