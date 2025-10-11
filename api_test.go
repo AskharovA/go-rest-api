@@ -36,6 +36,12 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	}
 	testEvent.Save(dbConn)
 
+	testUser := models.User{
+		Email:    "test@example.com",
+		Password: "test",
+	}
+	testUser.Save(dbConn)
+
 	t.Cleanup(
 		func() {
 			dbConn.Close()
