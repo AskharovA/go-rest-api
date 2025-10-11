@@ -17,7 +17,7 @@ func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
 	authenticated.PUT("/events/:id", func(c *gin.Context) { updateEvent(c, dbConn) })
 	authenticated.DELETE("/events/:id", func(c *gin.Context) { deleteEvent(c, dbConn) })
 	authenticated.POST("/events/:id/register", func(c *gin.Context) { registerForEvent(c, dbConn) })
-	authenticated.DELETE("/events/:id/register")
+	authenticated.DELETE("/events/:id/register", func(c *gin.Context) { cancelRegistration(c, dbConn) })
 
 	server.POST("/signup", func(c *gin.Context) { signup(c, dbConn) })
 	server.POST("/login", func(c *gin.Context) { login(c, dbConn) })

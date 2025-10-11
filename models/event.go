@@ -108,7 +108,20 @@ func (e *Event) Delete(dbConn *sql.DB) error {
 }
 
 func (e *Event) Register(userId int64, dbConn *sql.DB) error {
-	query := "INSERT INTO registrations(eventId, userId) VALUES (?, ?)"
+	query := "INSERT INTO registrations (eventId, userId) VALUES (?, ?)"
+	stmt, err := dbConn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID, userId)
+	return err
+}
+
+func (e *Event) CancelRegistration(userId int64, dbConn *sql.DB) error {
+	query := "DELETE FROM registrations WHERE eventId = ? AND userId = ?"
 	stmt, err := dbConn.Prepare(query)
 	if err != nil {
 		return err
