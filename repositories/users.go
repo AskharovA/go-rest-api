@@ -59,7 +59,7 @@ func (r *dbUserRepository) ValidateCredentials(user *models.User) error {
 		return errors.New("credentials invalid")
 	}
 
-	passwordIsValid := utils.CheckPasswordHash(u.Password, retrievedPassword)
+	passwordIsValid := utils.CheckPasswordHash(user.Password, retrievedPassword)
 	if !passwordIsValid {
 		return errors.New("credentials invalid")
 	}
