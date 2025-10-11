@@ -2,14 +2,18 @@ package routes
 
 import (
 	"AskharovA/go-rest-api/models"
+	"AskharovA/go-rest-api/services"
 	"AskharovA/go-rest-api/utils"
-	"database/sql"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func signup(context *gin.Context, dbConn *sql.DB) {
+type UserAPI struct {
+	UserService services.UserService
+}
+
+func (api *UserAPI) signup(context *gin.Context) {
 	var user models.User
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
@@ -17,7 +21,7 @@ func signup(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	err = user.Save(dbConn)
+	err = api.UserService.CreateUser(&user)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not save the user."})
 		return
@@ -26,7 +30,7 @@ func signup(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusCreated, gin.H{"message": "User created successfully!"})
 }
 
-func login(context *gin.Context, dbConn *sql.DB) {
+func (api *UserAPI) login(context *gin.Context) {
 	var user models.User
 	err := context.ShouldBindJSON(&user)
 	if err != nil {
@@ -34,7 +38,7 @@ func login(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	err = user.ValidateCredentials(dbConn)
+	err = api.UserService.ValidateCredentials(&user)
 	if err != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 		return
