@@ -3,6 +3,7 @@ package main
 import (
 	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/models"
+	"AskharovA/go-rest-api/repositories"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -16,6 +17,16 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
+
+func getEventsRepo(dbConn *sql.DB) repositories.EventRepository {
+	eventsRepo := repositories.NewEventRepository(dbConn)
+	return eventsRepo
+}
+
+func getUsersRepo(dbConn *sql.DB) repositories.UserRepository {
+	usersRepo := repositories.NewUsersRepository(dbConn)
+	return usersRepo
+}
 
 func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	testDbFile := "api_test.db"
@@ -31,11 +42,15 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		t.Fatalf("Could not create tables for test database: %v", err)
 	}
 
+	usersRepo := getUsersRepo(dbConn)
+
 	testUser := models.User{
 		Email:    "test@example.com",
 		Password: "test",
 	}
-	testUser.Save(dbConn)
+	usersRepo.Save(&testUser)
+
+	eventsRepo := getEventsRepo(dbConn)
 
 	testEvent := models.Event{
 		Name:        "Test Event",
@@ -44,7 +59,7 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		DateTime:    time.Now(),
 		UserID:      testUser.ID,
 	}
-	testEvent.Save(dbConn)
+	eventsRepo.Save(&testEvent)
 
 	t.Cleanup(
 		func() {
