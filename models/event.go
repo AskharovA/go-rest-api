@@ -20,14 +20,12 @@ func (e *Event) Save(dbConn *sql.DB) error {
 	VALUES (?, ?, ?, ?, ?)
 	`
 	stmt, err := dbConn.Prepare(query)
-
 	if err != nil {
 		return err
 	}
 
 	defer stmt.Close()
 	result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID)
-
 	if err != nil {
 		return err
 	}
@@ -41,10 +39,10 @@ func (e *Event) Save(dbConn *sql.DB) error {
 func GetAllEvents(dbConn *sql.DB) ([]Event, error) {
 	query := "SELECT * FROM events ORDER BY id"
 	rows, err := dbConn.Query(query)
-
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	var events []Event
@@ -83,10 +81,10 @@ func (e *Event) Update(dbConn *sql.DB) error {
 	WHERE id = ?
 	`
 	stmt, err := dbConn.Prepare(query)
-
 	if err != nil {
 		return err
 	}
+
 	defer stmt.Close()
 
 	_, err = stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.ID)
@@ -99,10 +97,10 @@ func (e *Event) Delete(dbConn *sql.DB) error {
 	WHERE id = ?
 	`
 	stmt, err := dbConn.Prepare(query)
-
 	if err != nil {
 		return err
 	}
+
 	defer stmt.Close()
 
 	_, err = stmt.Exec(e.ID)
