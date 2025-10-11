@@ -140,6 +140,7 @@ func TestGetEvent(t *testing.T) {
 func TestUpdateEvent(t *testing.T) {
 	dbConn, eventId := setupTestDB(t)
 	router := setupRouter(dbConn)
+	token := getAuthToken(t, router)
 
 	updatedEvent := models.Event{
 		Name:        "Test Event",
@@ -153,6 +154,7 @@ func TestUpdateEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -161,11 +163,13 @@ func TestUpdateEvent(t *testing.T) {
 func TestDeleteEvent(t *testing.T) {
 	dbConn, eventId := setupTestDB(t)
 	router := setupRouter(dbConn)
+	token := getAuthToken(t, router)
 
 	url := fmt.Sprintf("/events/%d", eventId)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("DELETE", url, nil)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
