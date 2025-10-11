@@ -106,3 +106,16 @@ func (e *Event) Delete(dbConn *sql.DB) error {
 	_, err = stmt.Exec(e.ID)
 	return err
 }
+
+func (e *Event) Register(userId int64, dbConn *sql.DB) error {
+	query := "INSERT INTO registrations(eventId, userId) VALUES (?, ?)"
+	stmt, err := dbConn.Prepare(query)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(e.ID, userId)
+	return err
+}
