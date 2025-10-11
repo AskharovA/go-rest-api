@@ -2,15 +2,19 @@ package routes
 
 import (
 	"AskharovA/go-rest-api/models"
-	"database/sql"
+	"AskharovA/go-rest-api/services"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func getEvents(context *gin.Context, dbConn *sql.DB) {
-	events, err := models.GetAllEvents(dbConn)
+type EventAPI struct {
+	EventService *services.EventService
+}
+
+func (api *EventAPI) getEvents(context *gin.Context) {
+	events, err := api.EventService.GetEvents()
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
 		return
@@ -19,14 +23,14 @@ func getEvents(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusOK, gin.H{"message": "OK", "data": events})
 }
 
-func getEvent(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) getEvent(context *gin.Context) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
 		return
 	}
 
-	event, err := models.GetEventByID(eventId, dbConn)
+	event, err := api.EventService.GetEvent(eventId)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not fetch event."})
 		return
@@ -35,7 +39,7 @@ func getEvent(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusOK, gin.H{"message": "OK", "data": event})
 }
 
-func createEvent(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) createEvent(context *gin.Context) {
 	var event models.Event
 	err := context.ShouldBindJSON(&event)
 	if err != nil {
@@ -45,7 +49,7 @@ func createEvent(context *gin.Context, dbConn *sql.DB) {
 
 	userId := context.GetInt64("userId")
 	event.UserID = userId
-	err = event.Save(dbConn)
+	err = api.EventService.CreateEvent(&event)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not create event. Try again later."})
 		return
@@ -54,7 +58,7 @@ func createEvent(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusCreated, gin.H{"message": "OK", "data": event})
 }
 
-func updateEvent(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) updateEvent(context *gin.Context) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
@@ -62,7 +66,7 @@ func updateEvent(context *gin.Context, dbConn *sql.DB) {
 	}
 
 	userId := context.GetInt64("userId")
-	event, err := models.GetEventByID(eventId, dbConn)
+	event, err := api.EventService.GetEvent(eventId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch the event."})
 		return
@@ -81,7 +85,7 @@ func updateEvent(context *gin.Context, dbConn *sql.DB) {
 	}
 
 	updatedEvent.ID = eventId
-	err = updatedEvent.Update(dbConn)
+	err = api.EventService.UpdateEvent(&updatedEvent)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not update event."})
 		return
@@ -89,7 +93,7 @@ func updateEvent(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusOK, gin.H{"message": "Event updated successfully!"})
 }
 
-func deleteEvent(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) deleteEvent(context *gin.Context) {
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{"message": "Could not parse event id."})
@@ -97,7 +101,7 @@ func deleteEvent(context *gin.Context, dbConn *sql.DB) {
 	}
 
 	userId := context.GetInt64("userId")
-	event, err := models.GetEventByID(eventId, dbConn)
+	event, err := api.EventService.GetEvent(eventId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch the event."})
 		return
@@ -108,7 +112,7 @@ func deleteEvent(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	err = event.Delete(dbConn)
+	err = api.EventService.DeleteEvent(event)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not delete the event."})
 		return
