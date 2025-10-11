@@ -13,11 +13,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	testDbFile := "api_test.db"
+	os.Remove(testDbFile)
+
 	dbConn, err := db.InitDB(testDbFile)
 	if err != nil {
 		t.Fatalf("Could not initialize test database: %v", err)
@@ -51,6 +54,31 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	return dbConn, testEvent.ID
 }
 
+func getAuthToken(t *testing.T, router *gin.Engine) string {
+	loginCredentials := gin.H{
+		"email":    "test@example.com",
+		"password": "test",
+	}
+	payload, _ := json.Marshal(loginCredentials)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/login", bytes.NewBufferString(string(payload)))
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var responseBody map[string]string
+	err := json.Unmarshal(w.Body.Bytes(), &responseBody)
+	assert.Nil(t, err)
+
+	token, exists := responseBody["token"]
+	assert.True(t, exists)
+	assert.NotEmpty(t, token)
+
+	return token
+}
+
 func TestGetEvents(t *testing.T) {
 	dbConn, _ := setupTestDB(t)
 	router := setupRouter(dbConn)
@@ -66,6 +94,7 @@ func TestGetEvents(t *testing.T) {
 func TestCreateEvent(t *testing.T) {
 	dbConn, _ := setupTestDB(t)
 	router := setupRouter(dbConn)
+	token := getAuthToken(t, router)
 
 	newEvent := models.Event{
 		Name:        "Test Event",
@@ -78,6 +107,7 @@ func TestCreateEvent(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/events", bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
 
 	router.ServeHTTP(w, req)
 
@@ -98,6 +128,19 @@ func TestGetEvent(t *testing.T) {
 	dbConn, eventId := setupTestDB(t)
 	router := setupRouter(dbConn)
 
+	url := fmt.Sprintf("/events/%d", eventId)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestUpdateEvent(t *testing.T) {
+	dbConn, eventId := setupTestDB(t)
+	router := setupRouter(dbConn)
+
 	updatedEvent := models.Event{
 		Name:        "Test Event",
 		Description: "A test event.",
@@ -109,19 +152,6 @@ func TestGetEvent(t *testing.T) {
 	url := fmt.Sprintf("/events/%d", eventId)
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
-	req.Header.Set("Content-Type", "application/json")
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-}
-
-func TestUpdateEvent(t *testing.T) {
-	dbConn, eventId := setupTestDB(t)
-	router := setupRouter(dbConn)
-
-	url := fmt.Sprintf("/events/%d", eventId)
-	w := httptest.NewRecorder()
-	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Content-Type", "application/json")
 	router.ServeHTTP(w, req)
 

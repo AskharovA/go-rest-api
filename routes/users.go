@@ -46,5 +46,5 @@ func login(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	context.JSON(http.StatusCreated, gin.H{"message": "Login successful!", "token": token})
+	context.JSON(http.StatusOK, gin.H{"message": "Login successful!", "token": token})
 }
