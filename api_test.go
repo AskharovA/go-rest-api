@@ -31,19 +31,20 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		t.Fatalf("Could not create tables for test database: %v", err)
 	}
 
-	testEvent := models.Event{
-		Name:        "Test Event",
-		Description: "A test event.",
-		Location:    "Test Location",
-		DateTime:    time.Now(),
-	}
-	testEvent.Save(dbConn)
-
 	testUser := models.User{
 		Email:    "test@example.com",
 		Password: "test",
 	}
 	testUser.Save(dbConn)
+
+	testEvent := models.Event{
+		Name:        "Test Event",
+		Description: "A test event.",
+		Location:    "Test Location",
+		DateTime:    time.Now(),
+		UserID:      testUser.ID,
+	}
+	testEvent.Save(dbConn)
 
 	t.Cleanup(
 		func() {
