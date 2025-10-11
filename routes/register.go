@@ -2,14 +2,13 @@ package routes
 
 import (
 	"AskharovA/go-rest-api/models"
-	"database/sql"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
-func registerForEvent(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) registerForEvent(context *gin.Context) {
 	userId := context.GetInt64("userId")
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
@@ -17,13 +16,13 @@ func registerForEvent(context *gin.Context, dbConn *sql.DB) {
 		return
 	}
 
-	event, err := models.GetEventByID(eventId, dbConn)
+	event, err := api.EventService.GetEvent(eventId)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch event."})
 		return
 	}
 
-	err = event.Register(userId, dbConn)
+	err = api.EventService.Register(userId, event)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not register user for event."})
 		return
@@ -32,7 +31,7 @@ func registerForEvent(context *gin.Context, dbConn *sql.DB) {
 	context.JSON(http.StatusCreated, gin.H{"message": "Registered!"})
 }
 
-func cancelRegistration(context *gin.Context, dbConn *sql.DB) {
+func (api *EventAPI) cancelRegistration(context *gin.Context) {
 	userId := context.GetInt64("userId")
 	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
 	if err != nil {
@@ -42,7 +41,7 @@ func cancelRegistration(context *gin.Context, dbConn *sql.DB) {
 
 	var event models.Event
 	event.ID = eventId
-	err = event.CancelRegistration(userId, dbConn)
+	err = api.EventService.CancelRegistration(userId, &event)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not cancel registration."})
 		return
