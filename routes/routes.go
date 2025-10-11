@@ -14,6 +14,10 @@ func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
 	eventService := services.NewEventService(eventRepo)
 	eventAPI := &EventAPI{EventService: eventService}
 
+	userRepo := repositories.NewUsersRepository(dbConn)
+	userService := services.NewUserService(userRepo)
+	userAPI := &UserAPI{UserService: *userService}
+
 	server.GET("/events", eventAPI.getEvents)
 	server.GET("/events/:id", eventAPI.getEvent)
 
@@ -25,6 +29,6 @@ func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
 	authenticated.POST("/events/:id/register", func(c *gin.Context) { registerForEvent(c, dbConn) })
 	authenticated.DELETE("/events/:id/register", func(c *gin.Context) { cancelRegistration(c, dbConn) })
 
-	server.POST("/signup", func(c *gin.Context) { signup(c, dbConn) })
-	server.POST("/login", func(c *gin.Context) { login(c, dbConn) })
+	server.POST("/signup", userAPI.signup)
+	server.POST("/login", userAPI.login)
 }
