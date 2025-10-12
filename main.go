@@ -1,9 +1,11 @@
 package main
 
 import (
+	"AskharovA/go-rest-api/config"
 	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/routes"
 	"database/sql"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,5 +30,7 @@ func main() {
 	}
 
 	server := setupRouter(dbConn)
-	server.Run(":8080")
+
+	addr := fmt.Sprintf(":%d", config.Get().AppPort)
+	server.Run(addr)
 }
