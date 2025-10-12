@@ -200,3 +200,28 @@ func TestDeleteEvent(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 }
+
+func TestRegistrationEvent(t *testing.T) {
+	dbConn, eventId := setupTestDB(t)
+	router := setupRouter(dbConn)
+	token := getAuthToken(t, router)
+
+	// Registration on Event
+	url := fmt.Sprintf("/events/%d/register", eventId)
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", url, nil)
+	req.Header.Set("Authorization", token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+
+	// Cancel Registration
+	url = fmt.Sprintf("/events/%d/register", eventId)
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest("DELETE", url, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+}
