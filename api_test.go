@@ -30,7 +30,9 @@ func getUsersRepo(dbConn *sql.DB) repositories.UserRepository {
 
 func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	testDbFile := "api_test.db"
-	os.Remove(testDbFile)
+	if err := os.Remove(testDbFile); err != nil {
+		t.Logf("Could not remove test db file: %v", err)
+	}
 
 	dbConn, err := db.InitDB(testDbFile)
 	if err != nil {
@@ -48,7 +50,9 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		Email:    "test@example.com",
 		Password: "test",
 	}
-	usersRepo.Save(&testUser)
+	if err = usersRepo.Save(&testUser); err != nil {
+		t.Fatalf("Could not save test user: %v", err)
+	}
 
 	eventsRepo := getEventsRepo(dbConn)
 
@@ -59,12 +63,18 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		DateTime:    time.Now(),
 		UserID:      testUser.ID,
 	}
-	eventsRepo.Save(&testEvent)
+	if err = eventsRepo.Save(&testEvent); err != nil {
+		t.Fatalf("Could not save test event: %v", err)
+	}
 
 	t.Cleanup(
 		func() {
-			dbConn.Close()
-			os.Remove(testDbFile)
+			if err := dbConn.Close(); err != nil {
+				t.Fatalf("Could not close db: %v", err)
+			}
+			if err = os.Remove(testDbFile); err != nil {
+				t.Fatalf("Could not remove test db file: %v", err)
+			}
 		})
 
 	return dbConn, testEvent.ID

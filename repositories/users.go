@@ -5,6 +5,7 @@ import (
 	"AskharovA/go-rest-api/utils"
 	"database/sql"
 	"errors"
+	"log"
 )
 
 type UserRepository interface {
@@ -32,7 +33,11 @@ func (r *dbUserRepository) Save(user *models.User) error {
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	hashedPassword, err := utils.HashPassword(user.Password)
 	if err != nil {

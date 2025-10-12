@@ -30,7 +30,11 @@ func main() {
 		log.Fatalf("Could not connect to database: %v", err)
 	}
 
-	defer dbConn.Close()
+	defer func() {
+		if err := dbConn.Close(); err != nil {
+			log.Printf("Warning: could not close db connection: %v\n", err)
+		}
+	}()
 
 	err = db.CreateTables(dbConn)
 	if err != nil {

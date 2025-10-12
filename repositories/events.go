@@ -3,6 +3,7 @@ package repositories
 import (
 	"AskharovA/go-rest-api/models"
 	"database/sql"
+	"log"
 )
 
 type EventRepository interface {
@@ -35,7 +36,12 @@ func (r *dbEventRepository) Save(event *models.Event) error {
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
+
 	result, err := stmt.Exec(event.Name, event.Description, event.Location, event.DateTime, event.UserID)
 	if err != nil {
 		return err
@@ -54,7 +60,11 @@ func (r *dbEventRepository) GetAllEvents() ([]models.Event, error) {
 		return nil, err
 	}
 
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	var events []models.Event
 	for rows.Next() {
@@ -96,7 +106,11 @@ func (r *dbEventRepository) Update(event *models.Event) error {
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	_, err = stmt.Exec(event.Name, event.Description, event.Location, event.DateTime, event.ID)
 	return err
@@ -112,7 +126,11 @@ func (r *dbEventRepository) Delete(event *models.Event) error {
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	_, err = stmt.Exec(event.ID)
 	return err
@@ -125,7 +143,11 @@ func (r *dbEventRepository) Register(userId int64, event *models.Event) error {
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	_, err = stmt.Exec(event.ID, userId)
 	return err
@@ -138,7 +160,11 @@ func (r *dbEventRepository) CancelRegistration(userId int64, event *models.Event
 		return err
 	}
 
-	defer stmt.Close()
+	defer func() {
+		if err := stmt.Close(); err != nil {
+			log.Printf("Warning: could not close stmt: %v", err)
+		}
+	}()
 
 	_, err = stmt.Exec(event.ID, userId)
 	return err
