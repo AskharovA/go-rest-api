@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE/Editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Test files
+*_test.go
+coverage.out
+coverage.html
+
+# Build artifacts
+go-rest-api
+tmp/
+build/
+dist/
+
+# Database files
+*.db
+*.db.backup.*
+
+# Logs
+*.log
+build-errors.log
+
+# Air live reload
+.air.toml
+
+# Docker files (we don't need them inside the image)
+Dockerfile
+docker-compose*.yml
+
+# HTTP test files
+http/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
