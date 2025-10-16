@@ -21,9 +21,6 @@ LDFLAGS := -w -s
 .PHONY: help build run clean test deps tidy fmt vet lint
 .PHONY: dev-setup docker-build docker-run
 
-# Default target
-all: build
-
 ## Help
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -64,7 +61,7 @@ lint: ## Run golangci-lint (requires golangci-lint)
 		echo "Running golangci-lint..."; \
 		golangci-lint run; \
 	else \
-		echo "golangci-lint not found. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
+		echo "golangci-lint not found.; \
 	fi
 
 ## Dependencies
@@ -81,13 +78,6 @@ tidy: ## Clean up module dependencies
 	$(GOMOD) tidy
 
 ## Database
-db-reset: ## Reset database (delete and recreate)
-	@echo "Resetting database..."
-	@if [ -f $(DB_NAME) ]; then \
-		rm $(DB_NAME); \
-		echo "Database $(DB_NAME) removed"; \
-	fi
-
 db-backup: ## Backup database
 	@if [ -f $(DB_NAME) ]; then \
 		cp $(DB_NAME) $(DB_NAME).backup.$$(date +%Y%m%d_%H%M%S); \
@@ -126,8 +116,6 @@ docker-stop: ## Stop Docker container
 
 ## Quick commands for common workflows
 check: fmt vet lint test ## Run all code quality checks
-
-release: clean test build-release ## Build release version
 
 # Development workflow
 dev-workflow: clean deps tidy fmt vet test build ## Complete development workflow
