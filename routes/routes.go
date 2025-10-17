@@ -6,6 +6,7 @@ import (
 	"AskharovA/go-rest-api/services"
 	"database/sql"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,4 +32,18 @@ func RegisterRoutes(server *gin.Engine, dbConn *sql.DB) {
 
 	server.POST("/signup", userAPI.signup)
 	server.POST("/login", userAPI.login)
+
+	// CORS Middleware Config
+	// Allow all origins
+	server.Use(cors.Default())
+
+	// Detailed CORS config
+	// server.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"https://foo.com", "http://localhost:3000"},
+	// 	AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+	// 	AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+	// 	ExposeHeaders:    []string{"Content-Length"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// }))
 }
