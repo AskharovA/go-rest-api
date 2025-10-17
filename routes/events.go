@@ -14,7 +14,18 @@ type EventAPI struct {
 }
 
 func (api *EventAPI) getEvents(context *gin.Context) {
-	events, err := api.EventService.GetEvents()
+	page := context.Query("page")
+	per_page := context.Query("per_page")
+
+	pageInt := 1
+	perPageInt := 10
+
+	if page != "" && per_page != "" {
+		pageInt, _ = strconv.Atoi(page)
+		perPageInt, _ = strconv.Atoi(per_page)
+	}
+
+	events, err := api.EventService.GetEvents(pageInt, perPageInt)
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{"message": "Could not fetch events. Try again later."})
 		return

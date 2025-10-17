@@ -19,8 +19,8 @@ func (s *EventService) CreateEvent(event *models.Event) error {
 	return s.eventRepo.Save(event)
 }
 
-func (s *EventService) GetEvents() ([]models.Event, error) {
-	return s.eventRepo.GetAllEvents()
+func (s *EventService) GetEvents(page, per_page int) ([]models.Event, error) {
+	return s.eventRepo.GetAllEvents(page, per_page)
 }
 
 func (s *EventService) GetEvent(eventId int64) (*models.Event, error) {

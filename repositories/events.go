@@ -8,7 +8,7 @@ import (
 
 type EventRepository interface {
 	Save(event *models.Event) error
-	GetAllEvents() ([]models.Event, error)
+	GetAllEvents(page, per_page int) ([]models.Event, error)
 	GetEventByID(id int64) (*models.Event, error)
 	Update(event *models.Event) error
 	Delete(event *models.Event) error
@@ -53,9 +53,9 @@ func (r *dbEventRepository) Save(event *models.Event) error {
 	return err
 }
 
-func (r *dbEventRepository) GetAllEvents() ([]models.Event, error) {
-	query := "SELECT * FROM events ORDER BY id"
-	rows, err := r.db.Query(query)
+func (r *dbEventRepository) GetAllEvents(page, per_page int) ([]models.Event, error) {
+	query := "SELECT * FROM events ORDER BY id LIMIT ? OFFSET ?"
+	rows, err := r.db.Query(query, per_page, (page-1)*per_page)
 	if err != nil {
 		return nil, err
 	}
