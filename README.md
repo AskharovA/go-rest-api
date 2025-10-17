@@ -49,8 +49,8 @@ A REST API for an event booking system that allows users to create and register 
 
 ### Middleware
 - **Authentication middleware** - verifies JWT tokens for protected routes
-- **CORS middleware** - to support cross-origin requests  (◌ TODO)
-- **Logging middleware** - logs requests  (◌ TODO)
+- **CORS middleware** - to support cross-origin requests
+- **Logging middleware** - logs requests
 
 ### Project Structure
 ```
