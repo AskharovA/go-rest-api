@@ -4,6 +4,7 @@ import (
 	"AskharovA/go-rest-api/db"
 	"AskharovA/go-rest-api/models"
 	"AskharovA/go-rest-api/repositories"
+	"AskharovA/go-rest-api/services"
 	"bytes"
 	"database/sql"
 	"encoding/json"
@@ -21,6 +22,11 @@ import (
 func getEventsRepo(dbConn *sql.DB) repositories.EventRepository {
 	eventsRepo := repositories.NewEventRepository(dbConn)
 	return eventsRepo
+}
+
+func getEventsService(repo repositories.EventRepository) *services.EventService {
+	eventsService := services.NewEventService(repo)
+	return eventsService
 }
 
 func getUsersRepo(dbConn *sql.DB) repositories.UserRepository {
@@ -55,6 +61,7 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 	}
 
 	eventsRepo := getEventsRepo(dbConn)
+	eventsService := getEventsService(eventsRepo)
 
 	testEvent := models.Event{
 		Name:        "Test Event",
@@ -63,8 +70,12 @@ func setupTestDB(t *testing.T) (*sql.DB, int64) {
 		DateTime:    time.Now(),
 		UserID:      testUser.ID,
 	}
-	if err = eventsRepo.Save(&testEvent); err != nil {
-		t.Fatalf("Could not save test event: %v", err)
+	// if testEventID, err := eventsRepo.Save(&testEvent); err != nil {
+	// 	t.Fatalf("Could not save test event: %v", err)
+	// }
+	err = eventsService.CreateEvent(&testEvent)
+	if err != nil {
+		t.Fatalf("Could not create test event; %v", err)
 	}
 
 	t.Cleanup(

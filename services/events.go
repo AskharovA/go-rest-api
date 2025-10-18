@@ -16,7 +16,13 @@ func NewEventService(repo repositories.EventRepository) *EventService {
 }
 
 func (s *EventService) CreateEvent(event *models.Event) error {
-	return s.eventRepo.Save(event)
+	eventId, err := s.eventRepo.Save(event)
+	if err != nil {
+		return err
+	}
+
+	event.ID = eventId
+	return nil
 }
 
 func (s *EventService) GetEvents(page, per_page int) ([]models.Event, error) {

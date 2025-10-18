@@ -7,7 +7,7 @@ import (
 )
 
 type EventRepository interface {
-	Save(event *models.Event) error
+	Save(event *models.Event) (int64, error)
 	GetAllEvents(page, per_page int) ([]models.Event, error)
 	GetEventByID(id int64) (*models.Event, error)
 	Update(event *models.Event) error
@@ -26,14 +26,14 @@ func NewEventRepository(db *sql.DB) EventRepository {
 	}
 }
 
-func (r *dbEventRepository) Save(event *models.Event) error {
+func (r *dbEventRepository) Save(event *models.Event) (int64, error) {
 	query := `
 	INSERT INTO events (name, description, location, dateTime, userId)
 	VALUES (?, ?, ?, ?, ?)
 	`
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	defer func() {
@@ -44,13 +44,13 @@ func (r *dbEventRepository) Save(event *models.Event) error {
 
 	result, err := stmt.Exec(event.Name, event.Description, event.Location, event.DateTime, event.UserID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	eventId, err := result.LastInsertId()
-	event.ID = eventId
+	// event.ID = eventId
 
-	return err
+	return eventId, err
 }
 
 func (r *dbEventRepository) GetAllEvents(page, per_page int) ([]models.Event, error) {
