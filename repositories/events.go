@@ -48,7 +48,6 @@ func (r *dbEventRepository) Save(event *models.Event) (int64, error) {
 	}
 
 	eventId, err := result.LastInsertId()
-	// event.ID = eventId
 
 	return eventId, err
 }
